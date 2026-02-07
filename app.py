@@ -1,15 +1,28 @@
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
+import streamlit as st
+
 st.set_page_config(
     page_title="Psychrometric Chart Tool",
     layout="wide",
     menu_items={
         "Get help": None,
         "Report a bug": None,
-        "About": "Internal engineering tool"
+        "About": None
     }
 )
+st.markdown(
+    """
+    <style>
+        #MainMenu {visibility: hidden;}
+        footer {visibility: hidden;}
+        header {visibility: hidden;}
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 # ===============================
 # CONSTANTS
 # ===============================
