@@ -1,7 +1,15 @@
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
-
+st.set_page_config(
+    page_title="Psychrometric Chart Tool",
+    layout="wide",
+    menu_items={
+        "Get help": None,
+        "Report a bug": None,
+        "About": "Internal engineering tool"
+    }
+)
 # ===============================
 # CONSTANTS
 # ===============================
