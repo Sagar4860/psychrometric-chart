@@ -100,7 +100,7 @@ st.title("🌡️ Psychrometric Chart – Multi-Process HVAC Tool")
 
 num_processes = st.number_input(
     "Number of processes to plot",
-    min_value=1, max_value=5, value=1
+    min_value=1, max_value=10, value=1
 )
 
 processes = []
