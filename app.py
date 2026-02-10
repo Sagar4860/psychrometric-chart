@@ -114,22 +114,44 @@ for p in range(num_processes):
         st.markdown("### Point 1")
         n1 = st.slider("Number of readings", 1, 10, 3, key=f"n1_{p}")
         T1_vals = [st.number_input(f"T1-{i+1} (°C)", key=f"T1_{p}_{i}") for i in range(n1)]
-        RH1_vals = [st.number_input(f"RH1-{i+1} (0–1)", key=f"RH1_{p}_{i}") for i in range(n1)]
+        RH1_vals = [
+            st.number_input(
+                f"RH1-{i+1} (%)",
+                min_value=0.0,
+                max_value=100.0,
+                value=50.0,
+                step=0.1,
+                key=f"RH1_{p}_{i}"
+            )
+            for i in range(n1)
+        ]
+
 
     with col2:
         st.markdown("### Point 2")
         n2 = st.slider("Number of readings ", 1, 10, 3, key=f"n2_{p}")
         T2_vals = [st.number_input(f"T2-{i+1} (°C)", key=f"T2_{p}_{i}") for i in range(n2)]
-        RH2_vals = [st.number_input(f"RH2-{i+1} (0–1)", key=f"RH2_{p}_{i}") for i in range(n2)]
+        RH2_vals = [
+            st.number_input(
+                f"RH2-{i+1} (%)",
+                min_value=0.0,
+                max_value=100.0,
+                value=50.0,
+                step=0.1,
+                key=f"RH2_{p}_{i}"
+            )
+            for i in range(n2)
+        ]
+
 
     mode = st.selectbox("Mode", ["DEC", "IEC", "DX", "Custom"], key=f"mode_{p}")
     color = st.color_picker("Color", "#FF0000", key=f"color_{p}")
 
     processes.append({
         "T1": np.mean(T1_vals),
-        "RH1": np.mean(RH1_vals),
+        "RH1": np.mean(RH1_vals) / 100.0,
         "T2": np.mean(T2_vals),
-        "RH2": np.mean(RH2_vals),
+        "RH2": np.mean(RH2_vals) / 100.0,
         "mode": mode,
         "color": color
     })
