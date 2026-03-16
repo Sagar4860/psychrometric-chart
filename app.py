@@ -1,40 +1,6 @@
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
-import streamlit as st
-
-st.set_page_config(
-    page_title="Psychrometric Chart Tool",
-    layout="wide",
-    menu_items={
-        "Get help": None,
-        "Report a bug": None,
-        "About": None
-    }
-)
-st.markdown(
-    """
-    <style>
-        #MainMenu {visibility: hidden;}
-        footer {visibility: hidden;}
-        header {visibility: hidden;}
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-st.markdown(
-    """
-    <div style="
-        position: fixed;
-        bottom: 10px;
-        right: 15px;
-        font-size: 12px;
-        color: gray;">
-        Internal HVAC Tool – Prototype
-    </div>
-    """,
-    unsafe_allow_html=True
-)
 
 # ===============================
 # CONSTANTS
@@ -64,10 +30,10 @@ def humidity_ratio_from_enthalpy(h, T):
     return (h - 1.006 * T) / (2501 + 1.86 * T)
 
 # ===============================
-# PROCESS PLOTTING (UNCHANGED)
+# PROCESS PLOTTING
 # ===============================
 
-def plot_straight_process(ax, T1, RH1, T2, RH2, color, mode_text):
+def plot_straight_process(ax, T1, RH1, T2, RH2, color):
     W1 = humidity_ratio(T1, RH1) * 1000
     W2 = humidity_ratio(T2, RH2) * 1000
 
@@ -79,17 +45,14 @@ def plot_straight_process(ax, T1, RH1, T2, RH2, color, mode_text):
     ax.hlines([W1, W2], xmin=T_MIN, xmax=[T1, T2],
               colors=color, linestyles='dotted', linewidth=1)
 
-    ax.text(T1 + 0.4, W1 + 0.4,
+    # Point labels slightly away from actual points
+    ax.text(T1 + 0.8, W1 + 0.7,
             f"({T1:.1f}°C, {RH1*100:.1f}%)",
             fontsize=10, color=color)
 
-    ax.text(T2 + 0.4, W2 + 0.4,
+    ax.text(T2 + 0.8, W2 + 0.7,
             f"({T2:.1f}°C, {RH2*100:.1f}%)",
             fontsize=10, color=color)
-
-    ax.text((T1 + T2)/2 + 0.5, (W1 + W2)/2,
-            mode_text, fontsize=12,
-            fontweight='bold', color=color)
 
 # ===============================
 # STREAMLIT UI
@@ -98,9 +61,16 @@ def plot_straight_process(ax, T1, RH1, T2, RH2, color, mode_text):
 st.set_page_config(layout="wide")
 st.title("🌡️ Psychrometric Chart – Multi-Process HVAC Tool")
 
+# -------- ADD THIS --------
+if "num_processes" not in st.session_state:
+    st.session_state.num_processes = 1
+# --------------------------
+
 num_processes = st.number_input(
     "Number of processes to plot",
-    min_value=1, max_value=10, value=1
+    min_value=1,
+    max_value=5,
+    key="num_processes"
 )
 
 processes = []
@@ -114,35 +84,23 @@ for p in range(num_processes):
         st.markdown("### Point 1")
         n1 = st.slider("Number of readings", 1, 10, 3, key=f"n1_{p}")
         T1_vals = [st.number_input(f"T1-{i+1} (°C)", key=f"T1_{p}_{i}") for i in range(n1)]
-        RH1_vals = [
-            st.number_input(
-                f"RH1-{i+1} (%)",
-                min_value=0.0,
-                max_value=100.0,
-                value=50.0,
-                step=0.1,
-                key=f"RH1_{p}_{i}"
-            )
-            for i in range(n1)
-        ]
-
+        RH1_vals = [st.number_input(
+            f"RH1-{i+1} (%)",
+            min_value=0.0,
+            max_value=100.0,
+            key=f"RH1_{p}_{i}"
+        ) for i in range(n1)]
 
     with col2:
         st.markdown("### Point 2")
         n2 = st.slider("Number of readings ", 1, 10, 3, key=f"n2_{p}")
         T2_vals = [st.number_input(f"T2-{i+1} (°C)", key=f"T2_{p}_{i}") for i in range(n2)]
-        RH2_vals = [
-            st.number_input(
-                f"RH2-{i+1} (%)",
-                min_value=0.0,
-                max_value=100.0,
-                value=50.0,
-                step=0.1,
-                key=f"RH2_{p}_{i}"
-            )
-            for i in range(n2)
-        ]
-
+        RH2_vals = [st.number_input(
+            f"RH2-{i+1} (%)",
+            min_value=0.0,
+            max_value=100.0,
+            key=f"RH2_{p}_{i}"
+        ) for i in range(n2)]
 
     mode = st.selectbox("Mode", ["DEC", "IEC", "DX", "Custom"], key=f"mode_{p}")
     color = st.color_picker("Color", "#FF0000", key=f"color_{p}")
@@ -161,9 +119,9 @@ for p in range(num_processes):
 # ===============================
 
 if st.button("📈 Plot Chart"):
-    fig, ax = plt.subplots(figsize=(14, 9))
+    fig, ax = plt.subplots(figsize=(12, 7), dpi=100)
 
-    # ======== CHART CODE (UNCHANGED) ========
+    # ======== CHART CODE ========
     T = np.linspace(T_MIN, T_MAX, 700)
     W_sat = humidity_ratio_saturation(T) * 1000
 
@@ -202,13 +160,16 @@ if st.button("📈 Plot Chart"):
                 break
 
     # ======== MULTIPLE PROCESSES ========
-    for proc in processes:
+    for i, proc in enumerate(processes, start=1):
         plot_straight_process(
             ax,
             proc["T1"], proc["RH1"],
             proc["T2"], proc["RH2"],
-            proc["color"], proc["mode"]
+            proc["color"]
         )
+
+        ax.plot([], [], color=proc["color"], linewidth=3,
+                label=f"Process {i} - {proc['mode']}")
 
     ax.set_xlim(T_MIN, T_MAX)
     ax.set_ylim(0, W_MAX)
@@ -219,6 +180,9 @@ if st.button("📈 Plot Chart"):
         "Annotated Points, Projections & Multiple Modes"
     )
 
+    ax.legend(loc='upper left', fontsize=10, frameon=True)
     ax.grid(False)
-    plt.tight_layout()
+
+    fig.tight_layout(pad=1.0)
     st.pyplot(fig)
+    plt.close(fig)
