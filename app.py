@@ -69,7 +69,7 @@ if "num_processes" not in st.session_state:
 num_processes = st.number_input(
     "Number of processes to plot",
     min_value=1,
-    max_value=5,
+    max_value=15,
     key="num_processes"
 )
 
